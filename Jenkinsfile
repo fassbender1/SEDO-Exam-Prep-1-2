@@ -1,44 +1,34 @@
-pipeline{
-    agent{
-        label "node"
-    }
-    stages{
-        stage("Restore dependencies"){
-            when {
-                anyOf{
-                    branch "main"
-                    branch "develop"
-                }
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Restore') {
+            steps {
+                bat 'dotnet restore'
             }
-            steps{
-                bat "dotnet restore"
+        }
+
+        stage('Build') {
+            steps {
+                bat 'dotnet build --no-restore'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                bat 'dotnet test --no-build'
             }
         }
     }
-    stages{
-        stage("Build the project"){
-            when {
-                anyOf{
-                    branch "main"
-                    branch "develop"
-                }
-            }
-            steps{
-                bat "dotnet build --no-restore"
-            }
+
+    post {
+        success {
+            echo 'Build and tests completed successfully!'
         }
-    }
-    stages{
-        stage("Run tests"){
-            when {
-                anyOf{
-                    branch "main"
-                    branch "develop"
-                }
-            }
-            steps{
-                bat "dotnet test --no-build --verbosity normal"
-            }
+
+        failure {
+            echo 'Build or tests failed!'
         }
     }
 }
